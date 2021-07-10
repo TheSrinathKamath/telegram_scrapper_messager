@@ -30,7 +30,7 @@ def get_scrapped_files(results_path):
     print(colored(239, 245, 66,
                   '\n-------------------------\nSelect from scrapped list\n-------------------------\n'))
     files = files_in_folder(results_path)
-    print(files)
+
     for x in range(len(files)):
         print(f'[{x + 1}] {files[x]}')
 

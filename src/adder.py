@@ -13,7 +13,6 @@ from utils import colored
 
 
 def add_users_to_group(client):
-    print('in add')
     SLEEP_TIME_1 = 100
     SLEEP_TIME_2 = 100
     try:
