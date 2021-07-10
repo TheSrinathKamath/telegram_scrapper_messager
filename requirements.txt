@@ -1,0 +1,2 @@
+telethon
+cx_Freeze
