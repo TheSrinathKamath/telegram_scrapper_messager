@@ -1,6 +1,6 @@
 from telethon.tl.functions.messages import GetDialogsRequest
 from telethon.tl.types import InputPeerEmpty, InputPeerChannel, InputPeerUser
-from telethon.errors.rpcerrorlist import PeerFloodError, UserPrivacyRestrictedError
+from telethon.errors.rpcerrorlist import PeerFloodError, UserNotMutualContactError, UserPrivacyRestrictedError
 from telethon.tl.functions.channels import InviteToChannelRequest
 
 import time
@@ -8,6 +8,7 @@ import random
 import traceback
 
 from adder_utils import filter_scrapped_results, get_scrapped_files, set_delay
+from logger import log_error
 from scrapper_utils import read_scrapper_results
 from utils import colored
 
@@ -22,8 +23,9 @@ def add_users_to_group(client):
     # print(json_file_name)
     users = read_scrapper_results(json_file_name)
     users = filter_scrapped_results(users)
-    waiting_period = set_delay()
-
+    # waiting_period = set_delay()
+    PAUSE_TIME = int(input(
+        'Add a pause time between 10 records to prevent ban (>=120s recommended): '))
     chats = []
     last_date = None
     chunk_size = 200
@@ -59,32 +61,41 @@ def add_users_to_group(client):
     target_group_entity = InputPeerChannel(
         target_group.id, target_group.access_hash)
 
-    n = 0
+    count = 0
 
     for user in users:
-        n += 1
-        if n % 80 == 0:
-            time.sleep(waiting_period)
+        count += 1
+        if count % 80 == 0:
+            print(f'Pausing the adder for {PAUSE_TIME} seconds')
+            time.sleep(PAUSE_TIME)
         try:
-            print("Adding {}".format(user['id']))
-            user_to_add = InputPeerUser(user['id'], user['access_hash'])
-
-            client(InviteToChannelRequest(target_group_entity, [user_to_add]))
-            print(f'Waiting for {waiting_period} Seconds...')
-            time.sleep(random.randrange(60, 90))
+            print(colored(
+                245, 235, 56, "[+] Adding {}".format(user['name'])))
+            # user_to_add = InputPeerUser(user['id'], user['access_hash'])
+            if user['username'] == "":
+                continue
+            else:
+                user_to_add = client.get_input_entity(user['username'])
+                client(InviteToChannelRequest(
+                    target_group_entity, [user_to_add]))
+                print(f'Waiting for 60 - 90 Seconds...')
+                time.sleep(random.randrange(60, 90))
         except PeerFloodError:
             print(colored(245, 56, 56,
                           "Getting Flood Error from telegram. Script is stopping now. Please try again after some time."))
             print("Waiting {} seconds".format(SLEEP_TIME_2))
+            print(colored(245, 56, 56, 'Logout and signin again to resolve error.'))
             time.sleep(SLEEP_TIME_2)
         except UserPrivacyRestrictedError:
             print(colored(
                 245, 56, 56, "\n\nThe user's privacy settings do not allow you to do this. Skipping."))
             print(colored(235, 52, 235, "\nWaiting for 5 Seconds..."))
-            time.sleep(random.randrange(5, 0))
+            time.sleep(5)
+        except UserNotMutualContactError as u_err:
+            log_error(u_err, 'adder')
+            print(colored(245, 56, 56, f'\n{u_err}\Skipping user. . .'))
         except Exception as err:
-            traceback.print_exc()
+            log_error(err, 'adder')
+            # traceback.print_exc()
             print(f'Error occured. Error : {err}')
             continue
-        finally:
-            return

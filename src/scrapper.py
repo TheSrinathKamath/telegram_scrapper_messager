@@ -45,5 +45,4 @@ def scrape(client):
     write_scrapped_list_to_json(
         target_group.title, all_participants, target_group)
 
-    client.log_out()
     return [True, all_participants]
