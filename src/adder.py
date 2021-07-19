@@ -26,6 +26,11 @@ def add_users_to_group(client):
     # waiting_period = set_delay()
     PAUSE_TIME = int(input(
         'Add a pause time between 10 records to prevent ban (>=120s recommended): '))
+    SELECTOR_MODE = int(
+        input('Select Users by\n[1] ID\n[2] Username\n\nEnter choice: ')) - 1
+    SELECTOR_CHOICES = ["id", "name"]
+    SELECTOR = SELECTOR_CHOICES[SELECTOR_MODE]
+    
     chats = []
     last_date = None
     chunk_size = 200
@@ -75,7 +80,7 @@ def add_users_to_group(client):
             if user['username'] == "":
                 continue
             else:
-                user_to_add = client.get_input_entity(user['username'])
+                user_to_add = client.get_input_entity(user[SELECTOR])
                 client(InviteToChannelRequest(
                     target_group_entity, [user_to_add]))
                 print(f'Waiting for 60 - 90 Seconds...')
