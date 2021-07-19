@@ -28,7 +28,11 @@ def send_message(client):
 
     PAUSE_TIME = int(input(
         'Add a pause time between 10 records to prevent ban (>=120s recommended): '))
-
+    SELECTOR_MODE = int(
+        input('Select Users by\n[1] ID\n[2] Username\n\nEnter choice: ')) - 1
+    SELECTOR_CHOICES = ["id", "username"]
+    SELECTOR = SELECTOR_CHOICES[SELECTOR_MODE]
+    
     with open(message_file, 'r', encoding='utf-8') as mf:
         mf_data = mf.readlines()
 
@@ -38,7 +42,7 @@ def send_message(client):
 
     for user in users:
         # print(user['id'], user['access_hash'])
-        receiver = InputPeerUser(user['id'], user['access_hash'])
+        receiver = InputPeerUser(user[SELECTOR], user['access_hash'])
         try:
             print(colored(253, 255, 201,
                           "\nSending Message to:"), user['name'])
